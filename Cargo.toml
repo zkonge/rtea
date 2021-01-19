@@ -11,6 +11,7 @@ crate-type = ["cdylib"]
 [dependencies]
 byteorder = "1.4"
 generic-array = "0.14"
+rand = "0.8"
 
 [dependencies.pyo3]
 version = "0.13"

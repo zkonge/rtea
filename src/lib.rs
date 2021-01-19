@@ -4,6 +4,11 @@ use pyo3::{exceptions::PyValueError, prelude::*, types::PyBytes};
 mod block;
 mod tea;
 
+#[pyfunction]
+fn is_debug() -> bool {
+    cfg!(debug_assertions)
+}
+
 /// tea16_encrypt(text:bytes, key:bytes) -> bytes
 /// --
 ///
@@ -67,6 +72,7 @@ fn qqtea_decrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
 #[pymodule]
 /// A Python module implemented in Rust.
 fn rtea(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(is_debug, m)?)?;
     m.add_function(wrap_pyfunction!(tea16_encrypt, m)?)?;
     m.add_function(wrap_pyfunction!(tea16_decrypt, m)?)?;
     m.add_function(wrap_pyfunction!(qqtea_encrypt, m)?)?;

@@ -1,4 +1,5 @@
 use byteorder::{BigEndian, ByteOrder};
+use rand::{thread_rng, RngCore};
 
 use crate::tea::{GenericArray, Tea16};
 
@@ -9,9 +10,12 @@ pub fn qqtea_encrypt(text: &[u8], key: &[u8]) -> Vec<u8> {
     let plaintext_len = plaintext.len();
 
     plaintext[0] = (fill_count as u8 - 2) | 0xF8;
-    //既然是随机数，那全0也没啥事，但是不随机会有潜在**安全风险**
-    //这里是为了和pytea对拍，填充220
-    plaintext[1..fill_count + 1].fill(220);
+    if cfg!(debug_assertions) {
+        //这里是为了和pytea对拍，填充220
+        plaintext[1..fill_count + 1].fill(220);
+    } else {
+        thread_rng().fill_bytes(&mut plaintext[1..fill_count + 1]);
+    }
     plaintext[fill_count + 1..plaintext_len - 7].copy_from_slice(text);
 
     let mut work_block: Vec<u64> = vec![0; plaintext.len() / 8];
