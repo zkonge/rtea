@@ -19,7 +19,7 @@ Bring fast TEA cipher to Python. Powered by Rust.
 1. 新建一个虚拟环境并激活
 2. 安装开发依赖 `pip install -r requirements-dev.txt`
 3. 运行 `maturin develop [--release]` 在 `rtea` 目录下生成二进制库文件，可直接引入
-4. 或者运行 `maturin build [--release]` 在 `target/wheels` 下生成 `whl`
+4. 或者运行 `maturin build [--release]` 在 `target/wheels` 下生成 `whl`，在 Unix 系统上还可添加 `--strip` 以减少生成体积
 
 ## 测试
 
