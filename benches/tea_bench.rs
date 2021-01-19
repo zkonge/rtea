@@ -4,23 +4,19 @@
 #[path = "../src/tea.rs"]
 mod tea;
 
-#[cfg(test)]
-mod tests {
-    extern crate test;
+extern crate test;
 
-    use super::*;
-    use test::Bencher;
-    #[bench]
-    fn bench_tea16_encrypt(b: &mut Bencher) {
-        let mut text = vec![0u8; 8];
-        let key = vec![0u8; 16];
-        b.iter(|| tea::tea16_encrypt(&mut text, &key));
-    }
+use test::Bencher;
+#[bench]
+fn bench_tea16_encrypt(b: &mut Bencher) {
+    let mut text = vec![0u8; 8];
+    let key = vec![0u8; 16];
+    b.iter(|| tea::tea16_encrypt(&mut text, &key));
+}
 
-    #[bench]
-    fn bench_tea16_decrypt(b: &mut Bencher) {
-        let mut text = vec![0u8; 8];
-        let key = vec![0u8; 16];
-        b.iter(|| tea::tea16_decrypt(&mut text, &key));
-    }
+#[bench]
+fn bench_tea16_decrypt(b: &mut Bencher) {
+    let mut text = vec![0u8; 8];
+    let key = vec![0u8; 16];
+    b.iter(|| tea::tea16_decrypt(&mut text, &key));
 }
