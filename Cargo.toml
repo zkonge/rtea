@@ -1,0 +1,45 @@
+[package]
+name = "rtea"
+version = "0.1.0"
+authors = ["zkonge <zkonge@outlook.com>"]
+edition = "2018"
+
+[lib]
+name = "rtea"
+crate-type = ["cdylib"]
+
+[dependencies]
+byteorder = "1.4"
+generic-array = "0.14"
+
+[dependencies.pyo3]
+version = "0.13"
+features = ["extension-module"]
+
+[package.metadata.maturin]
+requires-python = ">=3.6"
+classifier = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python",
+    "Programming Language :: Rust",
+    "Typing :: Typed",
+]
+
+[profile.release]
+codegen-units = 1
+debug = false
+incremental = false
+lto = "fat"
+opt-level = 3
+panic = "abort"
