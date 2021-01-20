@@ -1,5 +1,8 @@
-name: Test Build
-on: [push]
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
 jobs:
   build:
     name: Build
@@ -54,8 +57,10 @@ jobs:
       - name: Build wheel
         run: maturin build --release --strip
       
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+      - name: Publish a Python distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@master
         with:
-          name: ${{ matrix.os }}-cp${{ matrix.python-version }}
-          path: target/wheels
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages_dir: target/wheels/
+          skip_existing: true
