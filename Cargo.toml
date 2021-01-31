@@ -1,8 +1,14 @@
 [package]
 name = "rtea"
-version = "0.2.0"
+version = "0.3.0"
+description = "Bring fast TEA cipher to Python. Powered by Rust."
 authors = ["zkonge <zkonge@outlook.com>"]
 edition = "2018"
+readme = "README.md"
+homepage = "https://github.com/zkonge/rtea"
+repository = "https://github.com/zkonge/rtea"
+license = "MIT"
+license-file = "LICENSE"
 
 [lib]
 name = "rtea"
@@ -22,7 +28,6 @@ requires-python = ">=3.6"
 classifier = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "License :: OSI Approved :: MIT License",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
