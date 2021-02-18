@@ -1,13 +1,12 @@
 [package]
 name = "rtea"
-version = "0.3.0"
+version = "0.3.1"
 description = "Bring fast TEA cipher to Python. Powered by Rust."
 authors = ["zkonge <zkonge@outlook.com>"]
 edition = "2018"
 readme = "README.md"
 homepage = "https://github.com/zkonge/rtea"
 repository = "https://github.com/zkonge/rtea"
-license = "MIT"
 license-file = "LICENSE"
 
 [lib]
