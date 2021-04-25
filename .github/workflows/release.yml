@@ -10,8 +10,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        # os: [ubuntu-latest, windows-latest, macos-latest]
+        # os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.6", "3.7", "3.8", "3.9"]
       fail-fast: true
     steps:
@@ -45,13 +45,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # - uses: actions/cache@v2
-      #   if: runner.os == 'macOS'
-      #   with:
-      #     path: ~/Library/Caches/pip
-      #     key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-pip-
+      - uses: actions/cache@v2
+        if: runner.os == 'macOS'
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: pip install --upgrade maturin twine
