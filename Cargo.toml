@@ -1,6 +1,6 @@
 [package]
 name = "rtea"
-version = "0.3.1"
+version = "0.3.2"
 description = "Bring fast TEA cipher to Python. Powered by Rust."
 authors = ["zkonge <zkonge@outlook.com>"]
 edition = "2018"
