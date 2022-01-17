@@ -33,9 +33,7 @@ def test_tea16_decrypt():
     for i in range(32):
         key, text = randbytes(16), randbytes(8)
         cipher_text = pytea16_encrypt(text, key)
-        assert pytea16_decrypt(cipher_text, key) == tea16_decrypt(
-            cipher_text, key
-        ), f"in round {i}"
+        assert pytea16_decrypt(cipher_text, key) == tea16_decrypt(cipher_text, key), f"in round {i}"
 
 
 @pytest.mark.parametrize("n", [4, 8, 256, 4096])
@@ -64,11 +62,7 @@ def test_qqtea_mixed_n(n):
         key, text = randbytes(16), randbytes(n)
 
         cipher_text = qqtea_encrypt(text, key)
-        assert pyqqtea_decrypt(cipher_text, key) == qqtea_decrypt(
-            cipher_text, key
-        ), f"in round {i}"
+        assert pyqqtea_decrypt(cipher_text, key) == qqtea_decrypt(cipher_text, key), f"in round {i}"
 
         cipher_text = pyqqtea_encrypt(text, key)
-        assert pyqqtea_decrypt(cipher_text, key) == qqtea_decrypt(
-            cipher_text, key
-        ), f"in round {i}"
+        assert pyqqtea_decrypt(cipher_text, key) == qqtea_decrypt(cipher_text, key), f"in round {i}"
