@@ -6,11 +6,11 @@ Bring fast TEA cipher to Python. Powered by Rust.
 ## 依赖
 ### 开发依赖
 1. ~~一个能跑起来的 Rust，不知道最低是什么版本，但是用新的准没错~~ 你大概需要一个 Nightly 的 Rust
-2. Python 3.6+
+2. Python 3.7+
 3. `requirements-dev.txt` 里的 `maturin`
 
 ### 运行依赖
-1. Python 3.6+
+1. Python 3.7+
 
 ## 构建
 
@@ -28,4 +28,5 @@ Bring fast TEA cipher to Python. Powered by Rust.
 2. 运行 `cargo bench` 运行速度测试
 
 ## 预编译包
-在右侧Release页面自取，目前只有 64 位 Windows Python3.9 的支持
+1. 从右侧 Release 页面获取
+2. 使用 pip 直接从 PyPI 安装
