@@ -1,5 +1,4 @@
-use pyo3::wrap_pyfunction;
-use pyo3::{exceptions::PyValueError, prelude::*, types::PyBytes};
+use pyo3::{exceptions::PyValueError, prelude::*, types::PyBytes, wrap_pyfunction};
 
 mod block;
 mod tea;
@@ -16,7 +15,7 @@ fn is_debug() -> bool {
 #[pyfunction]
 fn tea16_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyObject> {
     if text.len() != 8 || key.len() != 16 {
-        Err(PyValueError::new_err("Wrong text or key size"))?
+        return Err(PyValueError::new_err("Wrong text or key size"));
     }
     let mut text = text.to_owned();
     tea::tea16_encrypt(&mut text, key);
@@ -31,7 +30,7 @@ fn tea16_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
 #[pyfunction]
 fn tea16_decrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyObject> {
     if text.len() != 8 || key.len() != 16 {
-        Err(PyValueError::new_err("Wrong text or key size"))?
+        return Err(PyValueError::new_err("Wrong text or key size"));
     }
     let mut text = text.to_owned();
     tea::tea16_decrypt(&mut text, key);
@@ -46,7 +45,7 @@ fn tea16_decrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
 #[pyfunction]
 fn qqtea_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyObject> {
     if key.len() != 16 {
-        Err(PyValueError::new_err("Wrong key size"))?
+        return Err(PyValueError::new_err("Wrong key size"));
     }
 
     let text = block::qqtea_encrypt(text, key);
@@ -61,7 +60,7 @@ fn qqtea_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
 #[pyfunction]
 fn qqtea_decrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyObject> {
     if key.len() != 16 {
-        Err(PyValueError::new_err("Wrong key size"))?
+        return Err(PyValueError::new_err("Wrong key size"));
     }
 
     let text = block::qqtea_decrypt(text, key);

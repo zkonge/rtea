@@ -21,12 +21,8 @@ impl Tea16 {
 
         for _ in 0..16 {
             sum = sum.wrapping_add(TEA_DELTA);
-            x = x.wrapping_add(
-                k0.wrapping_add(y << 4) ^ y.wrapping_add(sum) ^ k1.wrapping_add(y >> 5),
-            );
-            y = y.wrapping_add(
-                k2.wrapping_add(x << 4) ^ x.wrapping_add(sum) ^ k3.wrapping_add(x >> 5),
-            );
+            x = x.wrapping_add(k0.wrapping_add(y << 4) ^ y.wrapping_add(sum) ^ k1.wrapping_add(y >> 5));
+            y = y.wrapping_add(k2.wrapping_add(x << 4) ^ x.wrapping_add(sum) ^ k3.wrapping_add(x >> 5));
         }
 
         ((x as u64) << 32) | y as u64
@@ -42,12 +38,8 @@ impl Tea16 {
         let k3 = self.key[3];
 
         for _ in 0..16 {
-            y = y.wrapping_sub(
-                k2.wrapping_add(x << 4) ^ x.wrapping_add(sum) ^ k3.wrapping_add(x >> 5),
-            );
-            x = x.wrapping_sub(
-                k0.wrapping_add(y << 4) ^ y.wrapping_add(sum) ^ k1.wrapping_add(y >> 5),
-            );
+            y = y.wrapping_sub(k2.wrapping_add(x << 4) ^ x.wrapping_add(sum) ^ k3.wrapping_add(x >> 5));
+            x = x.wrapping_sub(k0.wrapping_add(y << 4) ^ y.wrapping_add(sum) ^ k1.wrapping_add(y >> 5));
             sum = sum.wrapping_sub(TEA_DELTA);
         }
 
@@ -70,7 +62,7 @@ impl Tea16 {
 pub fn tea16_encrypt(text: &mut [u8], key: &[u8]) {
     let key: &GenericArray<u8, U16> = GenericArray::from_slice(key);
 
-    let mut n = BigEndian::read_u64(&text);
+    let mut n = BigEndian::read_u64(text);
 
     n = Tea16::new(key).encrypt(n);
 
@@ -80,7 +72,7 @@ pub fn tea16_encrypt(text: &mut [u8], key: &[u8]) {
 pub fn tea16_decrypt(text: &mut [u8], key: &[u8]) {
     let key: &GenericArray<u8, U16> = GenericArray::from_slice(key);
 
-    let mut n = BigEndian::read_u64(&text);
+    let mut n = BigEndian::read_u64(text);
 
     n = Tea16::new(key).decrypt(n);
 
