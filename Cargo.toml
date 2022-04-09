@@ -1,6 +1,6 @@
 [package]
 name = "rtea"
-version = "0.3.2"
+version = "0.3.3"
 description = "Bring fast TEA cipher to Python. Powered by Rust."
 authors = ["zkonge <zkonge@outlook.com>"]
 edition = "2021"
@@ -19,7 +19,7 @@ generic-array = "0.14"
 rand = "0.8"
 
 [dependencies.pyo3]
-version = "0.15"
+version = "0.16"
 features = ["extension-module"]
 
 [package.metadata.maturin]
@@ -47,4 +47,3 @@ debug = false
 incremental = false
 lto = "fat"
 opt-level = 3
-panic = "abort"
