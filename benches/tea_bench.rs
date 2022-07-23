@@ -9,14 +9,14 @@ extern crate test;
 use test::Bencher;
 #[bench]
 fn bench_tea16_encrypt(b: &mut Bencher) {
-    let mut text = vec![0u8; 8];
-    let key = vec![0u8; 16];
+    let mut text = [0u8; 8];
+    let key = [0u8; 16];
     b.iter(|| tea::tea16_encrypt(&mut text, &key));
 }
 
 #[bench]
 fn bench_tea16_decrypt(b: &mut Bencher) {
-    let mut text = vec![0u8; 8];
-    let key = vec![0u8; 16];
+    let mut text = [0u8; 8];
+    let key = [0u8; 16];
     b.iter(|| tea::tea16_decrypt(&mut text, &key));
 }

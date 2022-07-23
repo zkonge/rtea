@@ -1,13 +1,11 @@
-use byteorder::{BigEndian, ByteOrder};
 use rand::{thread_rng, RngCore};
 
-use crate::tea::{GenericArray, Tea16};
+use crate::tea::Tea16;
 
-pub fn qqtea_encrypt(text: &[u8], key: &[u8]) -> Vec<u8> {
+pub fn qqtea_encrypt(text: &[u8], key: &[u8; 16]) -> Vec<u8> {
     let fill_count = 9 - (text.len() + 1) % 8;
 
     let mut plaintext = vec![0u8; 1 + fill_count + text.len() + 7];
-    let plaintext_len = plaintext.len();
 
     plaintext[0] = (fill_count as u8 - 2) | 0xF8;
     if cfg!(debug_assertions) {
@@ -16,64 +14,55 @@ pub fn qqtea_encrypt(text: &[u8], key: &[u8]) -> Vec<u8> {
     } else {
         thread_rng().fill_bytes(&mut plaintext[1..fill_count + 1]);
     }
+
+    // Make borrow checker happy
+    let plaintext_len = plaintext.len();
     plaintext[fill_count + 1..plaintext_len - 7].copy_from_slice(text);
-
-    let mut work_block: Vec<u64> = vec![0; plaintext.len() / 8];
-
-    BigEndian::read_u64_into(&plaintext, &mut work_block);
 
     let mut iv1 = 0u64;
     let mut iv2 = 0u64;
     let mut holder: u64;
 
-    let cipher = Tea16::new(GenericArray::from_slice(key));
+    let cipher = Tea16::new(key);
 
-    for block in work_block.iter_mut() {
-        holder = *block ^ iv1;
+    for block in plaintext.chunks_exact_mut(8) {
+        let block: &mut [u8; 8] = block.try_into().unwrap();
 
+        holder = u64::from_be_bytes(*block) ^ iv1;
+    
         iv1 = cipher.encrypt(holder);
-
         iv1 ^= iv2;
-
         iv2 = holder;
 
-        *block = iv1;
+        *block = iv1.to_be_bytes();
     }
-
-    BigEndian::write_u64_into(&work_block, &mut plaintext);
 
     plaintext
 }
 
-pub fn qqtea_decrypt(text: &[u8], key: &[u8]) -> Vec<u8> {
-    let mut work_block: Vec<u64> = vec![0; text.len() / 8];
-
-    BigEndian::read_u64_into(text, &mut work_block);
+pub fn qqtea_decrypt(text: &[u8], key: &[u8; 16]) -> Vec<u8> {
+    let mut result = text.to_vec();
 
     let mut iv1 = 0u64;
     let mut iv2 = 0u64;
     let mut holder: u64;
     let mut tmp_block: u64;
 
-    let cipher = Tea16::new(GenericArray::from_slice(key));
+    let cipher = Tea16::new(key);
 
-    for block in work_block.iter_mut() {
-        tmp_block = *block ^ iv2;
+    for block in result.chunks_exact_mut(8) {
+        let block: &mut [u8; 8] = block.try_into().unwrap();
 
+        let n = u64::from_be_bytes(*block);
+
+        tmp_block = n ^ iv2;
         tmp_block = cipher.decrypt(tmp_block);
-
         iv2 = tmp_block;
-
         holder = tmp_block ^ iv1;
+        iv1 = n;
 
-        iv1 = *block;
-
-        *block = holder;
+        *block = holder.to_be_bytes();
     }
-
-    let mut result = vec![0u8; text.len()];
-
-    BigEndian::write_u64_into(&work_block, &mut result);
 
     let begin_pos = ((result[0] as usize) & 7) + 3;
     let end_pos = result.len() - 7;

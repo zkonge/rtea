@@ -1,14 +1,9 @@
-use byteorder::{BigEndian, ByteOrder};
-pub use generic_array::{
-    typenum::{U16, U8},
-    GenericArray,
-};
-
 const TEA_DELTA: u32 = 0x9E3779B9;
 
 pub struct Tea16 {
     key: [u32; 4],
 }
+
 impl Tea16 {
     #[inline]
     pub fn encrypt(&self, n: u64) -> u64 {
@@ -47,34 +42,28 @@ impl Tea16 {
     }
 
     #[inline]
-    pub fn new(key: &GenericArray<u8, U16>) -> Self {
+    pub fn new(key: &[u8; 16]) -> Self {
         Self {
             key: [
-                BigEndian::read_u32(&key[0..4]),
-                BigEndian::read_u32(&key[4..8]),
-                BigEndian::read_u32(&key[8..12]),
-                BigEndian::read_u32(&key[12..16]),
+                u32::from_be_bytes(key[0..4].try_into().unwrap()),
+                u32::from_be_bytes(key[4..8].try_into().unwrap()),
+                u32::from_be_bytes(key[8..12].try_into().unwrap()),
+                u32::from_be_bytes(key[12..16].try_into().unwrap()),
             ],
         }
     }
 }
 
-pub fn tea16_encrypt(text: &mut [u8], key: &[u8]) {
-    let key: &GenericArray<u8, U16> = GenericArray::from_slice(key);
-
-    let mut n = BigEndian::read_u64(text);
-
+#[allow(dead_code)]
+pub fn tea16_encrypt(text: &mut [u8; 8], key: &[u8; 16]) {
+    let mut n = u64::from_be_bytes(*text);
     n = Tea16::new(key).encrypt(n);
-
-    BigEndian::write_u64(text, n);
+    *text = n.to_be_bytes();
 }
 
-pub fn tea16_decrypt(text: &mut [u8], key: &[u8]) {
-    let key: &GenericArray<u8, U16> = GenericArray::from_slice(key);
-
-    let mut n = BigEndian::read_u64(text);
-
+#[allow(dead_code)]
+pub fn tea16_decrypt(text: &mut [u8; 8], key: &[u8; 16]) {
+    let mut n = u64::from_be_bytes(*text);
     n = Tea16::new(key).decrypt(n);
-
-    BigEndian::write_u64(text, n);
+    *text = n.to_be_bytes();
 }

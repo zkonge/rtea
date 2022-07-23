@@ -1,6 +1,6 @@
 [package]
 name = "rtea"
-version = "0.3.3"
+version = "0.3.4"
 description = "Bring fast TEA cipher to Python. Powered by Rust."
 authors = ["zkonge <zkonge@outlook.com>"]
 edition = "2021"
@@ -14,13 +14,11 @@ name = "rtea"
 crate-type = ["cdylib"]
 
 [dependencies]
-byteorder = "1.4"
-generic-array = "0.14"
 rand = "0.8"
 
 [dependencies.pyo3]
 version = "0.16"
-features = ["extension-module"]
+features = ["extension-module", "abi3-py37"]
 
 [package.metadata.maturin]
 requires-python = ">=3.7"

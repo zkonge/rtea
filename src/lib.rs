@@ -18,7 +18,7 @@ fn tea16_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
         return Err(PyValueError::new_err("Wrong text or key size"));
     }
     let mut text = text.to_owned();
-    tea::tea16_encrypt(&mut text, key);
+    tea::tea16_encrypt(text.as_mut_slice().try_into().unwrap(), key.try_into().unwrap());
 
     Ok(PyBytes::new(py, &text).into())
 }
@@ -33,7 +33,7 @@ fn tea16_decrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
         return Err(PyValueError::new_err("Wrong text or key size"));
     }
     let mut text = text.to_owned();
-    tea::tea16_decrypt(&mut text, key);
+    tea::tea16_decrypt(text.as_mut_slice().try_into().unwrap(), key.try_into().unwrap());
 
     Ok(PyBytes::new(py, &text).into())
 }
@@ -48,7 +48,7 @@ fn qqtea_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
         return Err(PyValueError::new_err("Wrong key size"));
     }
 
-    let text = block::qqtea_encrypt(text, key);
+    let text = block::qqtea_encrypt(text, key.try_into().unwrap());
 
     Ok(PyBytes::new(py, &text).into())
 }
@@ -63,7 +63,7 @@ fn qqtea_decrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
         return Err(PyValueError::new_err("Wrong key size"));
     }
 
-    let text = block::qqtea_decrypt(text, key);
+    let text = block::qqtea_decrypt(text, key.try_into().unwrap());
 
     Ok(PyBytes::new(py, &text).into())
 }
