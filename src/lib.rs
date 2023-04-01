@@ -1,7 +1,14 @@
-use pyo3::{exceptions::PyValueError, prelude::*, types::PyBytes, wrap_pyfunction};
+// publish internal modules for test/bench.
+pub mod block;
+pub mod tea;
 
-mod block;
-mod tea;
+use block::QQTea;
+use pyo3::{
+    exceptions::{PyRuntimeError, PyValueError},
+    pyfunction, pymodule,
+    types::{PyBytes, PyModule},
+    wrap_pyfunction, PyResult, Python,
+};
 
 #[pyfunction]
 fn is_debug() -> bool {
@@ -13,14 +20,15 @@ fn is_debug() -> bool {
 ///
 /// Encrypt text with key using 16-rounds TEA
 #[pyfunction]
-fn tea16_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyObject> {
-    if text.len() != 8 || key.len() != 16 {
-        return Err(PyValueError::new_err("Wrong text or key size"));
-    }
-    let mut text = text.to_owned();
-    tea::tea16_encrypt(text.as_mut_slice().try_into().unwrap(), key.try_into().unwrap());
+fn tea16_encrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<&'a PyBytes> {
+    let (data, key): (&[u8; 8], &[u8; 16]) = match (data.try_into(), key.try_into()) {
+        (Ok(text), Ok(key)) => (text, key),
+        _ => return Err(PyValueError::new_err("Wrong text or key size")),
+    };
 
-    Ok(PyBytes::new(py, &text).into())
+    let data = tea::tea16_encrypt(*data, *key);
+
+    Ok(PyBytes::new(py, &data))
 }
 
 /// tea16_decrypt(text:bytes, key:bytes) -> bytes
@@ -28,14 +36,15 @@ fn tea16_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
 ///
 /// Decrypt text with key using 16-rounds TEA
 #[pyfunction]
-fn tea16_decrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyObject> {
-    if text.len() != 8 || key.len() != 16 {
-        return Err(PyValueError::new_err("Wrong text or key size"));
-    }
-    let mut text = text.to_owned();
-    tea::tea16_decrypt(text.as_mut_slice().try_into().unwrap(), key.try_into().unwrap());
+fn tea16_decrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<&'a PyBytes> {
+    let (data, key): (&[u8; 8], &[u8; 16]) = match (data.try_into(), key.try_into()) {
+        (Ok(text), Ok(key)) => (text, key),
+        _ => return Err(PyValueError::new_err("Wrong text or key size")),
+    };
 
-    Ok(PyBytes::new(py, &text).into())
+    let data = tea::tea16_decrypt(*data, *key);
+
+    Ok(PyBytes::new(py, &data))
 }
 
 /// qqtea_encrypt(text:bytes, key:bytes) -> bytes
@@ -43,14 +52,23 @@ fn tea16_decrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
 ///
 /// Encrypt text with key using 16-rounds QQ style TEA
 #[pyfunction]
-fn qqtea_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyObject> {
-    if key.len() != 16 {
-        return Err(PyValueError::new_err("Wrong key size"));
-    }
+fn qqtea_encrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<&'a PyBytes> {
+    let key: &[u8; 16] = key
+        .try_into()
+        .map_err(|_| PyValueError::new_err("Wrong key size"))?;
 
-    let text = block::qqtea_encrypt(text, key.try_into().unwrap());
+    let cipher = QQTea::new(*key);
 
-    Ok(PyBytes::new(py, &text).into())
+    PyBytes::new_with(
+        py,
+        QQTea::estimate_ciphertext_size(data.len()),
+        |buf| match cipher.encrypt_inout(data, buf) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(PyRuntimeError::new_err(
+                "insufficient output buffer, this is a internal error, and should not happen",
+            )),
+        },
+    )
 }
 
 /// qqtea_decrypt(text:bytes, key:bytes) -> bytes
@@ -58,14 +76,29 @@ fn qqtea_encrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyOb
 ///
 /// Decrypt text with key using 16-rounds QQ style TEA
 #[pyfunction]
-fn qqtea_decrypt<'a>(py: Python, text: &'a [u8], key: &'a [u8]) -> PyResult<PyObject> {
-    if key.len() != 16 {
-        return Err(PyValueError::new_err("Wrong key size"));
-    }
+fn qqtea_decrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<&'a PyBytes> {
+    let key: &[u8; 16] = key
+        .try_into()
+        .map_err(|_| PyValueError::new_err("Wrong key size"))?;
 
-    let text = block::qqtea_decrypt(text, key.try_into().unwrap());
+    let cipher = QQTea::new(*key);
 
-    Ok(PyBytes::new(py, &text).into())
+    let mut plaintext_range = None;
+
+    // use Python arena for faster allocation
+    let temp_bytes = PyBytes::new_with(py, data.len(), |buf| {
+        buf.copy_from_slice(data);
+
+        plaintext_range = Some(
+            cipher
+                .decrypt_inout(buf)
+                .map_err(|_| PyValueError::new_err("Bad ciphertext"))?,
+        );
+
+        Ok(())
+    })?;
+
+    Ok(PyBytes::new(py, &temp_bytes[plaintext_range.unwrap()]))
 }
 
 #[pymodule]

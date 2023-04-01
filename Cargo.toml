@@ -11,33 +11,14 @@ license-file = "LICENSE"
 
 [lib]
 name = "rtea"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 rand = "0.8"
 
 [dependencies.pyo3]
-version = "0.16"
+version = "0.18"
 features = ["extension-module", "abi3-py37"]
-
-[package.metadata.maturin]
-requires-python = ">=3.7"
-classifier = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: MacOS",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python",
-    "Programming Language :: Rust",
-    "Typing :: Typed",
-]
 
 [profile.release]
 codegen-units = 1
