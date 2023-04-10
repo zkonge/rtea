@@ -64,8 +64,6 @@ jobs:
           target: ${{ matrix.target }}
           args: --release --out dist
           sccache: 'true'
-      - name: Run Test
-        run: cargo test
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
@@ -89,8 +87,6 @@ jobs:
           target: ${{ matrix.target }}
           args: --release --out dist
           sccache: 'true'
-      - name: Run Test
-        run: cargo test
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
@@ -111,6 +107,22 @@ jobs:
         with:
           name: wheels
           path: dist
+
+  test:
+    strategy:
+      matrix:
+        os: ["windows-latest", "ubuntu-latest", "macos-latest"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Setup Rust Nightly
+        uses: dtolnay/rust-toolchain@nightly
+      - name: Run Test
+        run: cargo test
 
   release:
     name: Release
