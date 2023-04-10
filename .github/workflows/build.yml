@@ -92,34 +92,6 @@ jobs:
           name: wheels
           path: dist
 
-  emscripten:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install pyodide-build
-      - shell: bash
-        run: echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
-      - uses: mymindstorm/setup-emsdk@v12
-        with:
-          version: ${{ env.EMSCRIPTEN_VERSION }}
-          actions-cache-folder: emsdk-cache
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: wasm32-unknown-emscripten
-          args: --release --out dist
-          sccache: 'true'
-          rust-toolchain: nightly
-      - name: Upload wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: dist
-
   sdist:
     runs-on: ubuntu-latest
     steps:
@@ -139,7 +111,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
-    needs: [linux, windows, macos, emscripten, sdist]
+    needs: [linux, windows, macos, sdist]
     permissions:
       # Used to upload release artifacts
       contents: write
