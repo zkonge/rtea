@@ -122,13 +122,13 @@ jobs:
       - name: Setup Rust Nightly
         uses: dtolnay/rust-toolchain@nightly
       - name: Run Test
-        run: cargo test
+        run: cargo test --no-default-features
 
   release:
     name: Release
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
-    needs: [linux, windows, macos, sdist]
+    needs: [linux, windows, macos, sdist, test]
     permissions:
       # Used to upload release artifacts
       contents: write
