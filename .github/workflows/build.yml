@@ -36,7 +36,6 @@ jobs:
           args: --release --out dist
           sccache: 'true'
           manylinux: auto
-          before-script-linux: cargo test
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
