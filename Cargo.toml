@@ -18,7 +18,11 @@ rand = "0.8"
 
 [dependencies.pyo3]
 version = "0.18"
-features = ["extension-module", "abi3-py37"]
+features = ["abi3-py37"]
+
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]
 
 [profile.release]
 codegen-units = 1

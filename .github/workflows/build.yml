@@ -1,66 +1,98 @@
-name: Test Build
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  release:
+    types: [published]
 
-on: [push]
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: '3.7'
 
 jobs:
-  build:
-    name: Build
-    runs-on: ${{ matrix.os }}
+  linux:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.7"]
-      fail-fast: true
+        target: [x64, x86, aarch64, armv7, s390x, ppc64le]
+    uses: ./.github/workflows/build-wheel.yml
+    with:
+      os: ubuntu-latest
+      target: ${{ matrix.target }}
+
+  windows:
+    strategy:
+      matrix:
+        target: [x64, x86, aarch64]
+        include:
+          - target: x86
+            py-arch: x86
+    uses: ./.github/workflows/build-wheel.yml
+    with:
+      os: windows-latest
+      target: ${{ matrix.target }}
+      py-arch: ${{ matrix.py-arch }}
+
+  macos:
+    strategy:
+      matrix:
+        target: [x64, aarch64]
+    uses: ./.github/workflows/build-wheel.yml
+    with:
+      os: macos-latest
+      target: ${{ matrix.target }}
+
+  sdist:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup rust nightly
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
         with:
-          toolchain: nightly
-          default: true
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+          command: sdist
+          args: --out dist
+      - name: Upload sdist
+        uses: actions/upload-artifact@v3
         with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
+          name: wheels
+          path: dist
 
-      - uses: actions/cache@v2
-        if: runner.os == 'Linux'
+  test:
+    strategy:
+      matrix:
+        os: ["windows-latest", "ubuntu-latest", "macos-latest"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Setup Rust Nightly
+        uses: dtolnay/rust-toolchain@nightly
+      - name: Run Test
+        run: cargo test --no-default-features
 
-      - uses: actions/cache@v2
-        if: runner.os == 'Windows'
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    needs: [linux, windows, macos, sdist, test]
+    permissions:
+      # Used to upload release artifacts
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v3
         with:
-          path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - uses: actions/cache@v2
-        if: runner.os == 'macOS'
+          name: wheels
+          path: dist
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: pip install --upgrade maturin
-
-      - name: Test
-        run: cargo test
-
-      - name: Build wheel
-        run: maturin build --release --strip
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.os }}-cp${{ matrix.python-version }}
-          path: target/wheels
+          password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Upload to GitHub Release
+        run: gh release upload ${{ github.event.release.tag_name }} dist/*
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

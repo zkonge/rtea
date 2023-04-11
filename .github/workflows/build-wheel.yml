@@ -1,0 +1,40 @@
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+      py-arch:
+        required: false
+        type: string
+        default: x64
+      target:
+        required: true
+        type: string
+
+env:
+  PYTHON_VERSION: 3.7
+
+jobs:
+  build-wheel:
+    name: Build Wheel
+    runs-on: ${{ inputs.os }}
+    steps:
+        - uses: actions/checkout@v3
+        - name: Setup Python ${{ env.PYTHON_VERSION }}
+          uses: actions/setup-python@v4
+          with:
+            python-version: ${{ env.PYTHON_VERSION }}
+            architecture: ${{ inputs.py-arch }}
+        - name: Build wheels
+          uses: PyO3/maturin-action@v1
+          with:
+            target: ${{ inputs.target }}
+            args: --release --out dist
+            sccache: 'true'
+            manylinux: auto
+        - name: Upload wheels
+          uses: actions/upload-artifact@v3
+          with:
+            name: wheels
+            path: dist
