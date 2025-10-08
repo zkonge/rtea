@@ -6,8 +6,8 @@ use block::QQTea;
 use pyo3::{
     exceptions::{PyRuntimeError, PyValueError},
     pyfunction, pymodule,
-    types::{PyBytes, PyModule},
-    wrap_pyfunction, PyResult, Python,
+    types::{PyBytes, PyModule, PyModuleMethods},
+    wrap_pyfunction, Bound, PyResult, Python,
 };
 
 #[pyfunction]
@@ -20,7 +20,11 @@ fn is_debug() -> bool {
 ///
 /// Encrypt text with key using 16-rounds TEA
 #[pyfunction]
-fn tea16_encrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<&'a PyBytes> {
+fn tea16_encrypt<'a>(
+    py: Python<'a>,
+    data: &'a [u8],
+    key: &'a [u8],
+) -> PyResult<Bound<'a, PyBytes>> {
     let (data, key): (&[u8; 8], &[u8; 16]) = match (data.try_into(), key.try_into()) {
         (Ok(text), Ok(key)) => (text, key),
         _ => return Err(PyValueError::new_err("Wrong text or key size")),
@@ -36,7 +40,11 @@ fn tea16_encrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<
 ///
 /// Decrypt text with key using 16-rounds TEA
 #[pyfunction]
-fn tea16_decrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<&'a PyBytes> {
+fn tea16_decrypt<'a>(
+    py: Python<'a>,
+    data: &'a [u8],
+    key: &'a [u8],
+) -> PyResult<Bound<'a, PyBytes>> {
     let (data, key): (&[u8; 8], &[u8; 16]) = match (data.try_into(), key.try_into()) {
         (Ok(text), Ok(key)) => (text, key),
         _ => return Err(PyValueError::new_err("Wrong text or key size")),
@@ -52,7 +60,11 @@ fn tea16_decrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<
 ///
 /// Encrypt text with key using 16-rounds QQ style TEA
 #[pyfunction]
-fn qqtea_encrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<&'a PyBytes> {
+fn qqtea_encrypt<'a>(
+    py: Python<'a>,
+    data: &'a [u8],
+    key: &'a [u8],
+) -> PyResult<Bound<'a, PyBytes>> {
     let key: &[u8; 16] = key
         .try_into()
         .map_err(|_| PyValueError::new_err("Wrong key size"))?;
@@ -76,7 +88,11 @@ fn qqtea_encrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<
 ///
 /// Decrypt text with key using 16-rounds QQ style TEA
 #[pyfunction]
-fn qqtea_decrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<&'a PyBytes> {
+fn qqtea_decrypt<'a>(
+    py: Python<'a>,
+    data: &'a [u8],
+    key: &'a [u8],
+) -> PyResult<Bound<'a, PyBytes>> {
     let key: &[u8; 16] = key
         .try_into()
         .map_err(|_| PyValueError::new_err("Wrong key size"))?;
@@ -103,7 +119,7 @@ fn qqtea_decrypt<'a>(py: Python<'a>, data: &'a [u8], key: &'a [u8]) -> PyResult<
 
 #[pymodule]
 /// A Python module implemented in Rust.
-fn rtea(_py: Python, m: &PyModule) -> PyResult<()> {
+fn rtea(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(is_debug, m)?)?;
     m.add_function(wrap_pyfunction!(tea16_encrypt, m)?)?;
     m.add_function(wrap_pyfunction!(tea16_decrypt, m)?)?;

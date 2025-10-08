@@ -14,10 +14,10 @@ name = "rtea"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-rand = "0.8"
+rand = "0.9"
 
 [dependencies.pyo3]
-version = "0.18"
+version = "0.26"
 features = ["abi3-py37"]
 
 [features]

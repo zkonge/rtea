@@ -4,7 +4,7 @@ use std::{
     ops::Range,
 };
 
-use rand::{thread_rng, RngCore};
+use rand::{rng, RngCore};
 
 use crate::tea::Tea16;
 
@@ -55,7 +55,7 @@ impl QQTea {
             // test with standard pytea, filling with 220
             out[1..fill_count + 1].fill(220);
         } else {
-            thread_rng().fill_bytes(&mut out[1..fill_count + 1]);
+            rng().fill_bytes(&mut out[1..fill_count + 1]);
         }
 
         // make borrow checker happy
