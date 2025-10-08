@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  PYTHON_VERSION: '3.7'
+  PYTHON_VERSION: '3.8'
 
 jobs:
   linux:
@@ -47,14 +47,14 @@ jobs:
   sdist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
           command: sdist
           args: --out dist
       - name: Upload sdist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist
@@ -65,9 +65,9 @@ jobs:
         os: ["windows-latest", "ubuntu-latest", "macos-latest"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Setup Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Setup Rust Nightly
@@ -85,8 +85,8 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+        uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
         with:
           name: wheels
           path: dist
